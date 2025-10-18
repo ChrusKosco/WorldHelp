@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Info + Consent Form (Touch Friendly)</title>
+    <style>
+        :root {
+            --accent: #0b79d0;
+            --muted: #555;
+            --bg: #f6f9fc;
+            --card: #fff;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+            background: var(--bg);
+            color: #111
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 18px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px
+        }
+
+            header h1 {
+                font-size: 1.2rem;
+                margin: 0
+            }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(20,30,40,0.06)
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        label {
+            display: block;
+            font-size: 0.88rem;
+            margin-bottom: 6px;
+            color: var(--muted)
+        }
+
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d7dfe9;
+            font-size: 1rem;
+            background: linear-gradient(white,white);
+        }
+
+        .col {
+            flex: 1 1 220px;
+            min-width: 220px
+        }
+
+        .full {
+            flex-basis: 100%
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical
+        }
+
+        .consent {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: #222;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed #e0e7ef;
+            background: #fcfeff
+        }
+
+        .sig-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch
+        }
+
+        #sig-canvas {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            border: 2px solid #e6eef8;
+            background: #fff;
+            touch-action: none
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: 0;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer
+        }
+
+            button.ghost {
+                background: transparent;
+                color: var(--accent);
+                border: 1px solid var(--accent)
+            }
+
+        .small {
+            font-size: 0.85rem;
+            padding: 8px 10px
+        }
+
+        .note {
+            font-size: 0.86rem;
+            color: var(--muted);
+            margin-top: 8px
+        }
+
+        @media (max-width:520px) {
+            .col {
+                min-width: 100%
+            }
+
+            #sig-canvas {
+                height: 160px
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header><h1>Information & Consent Form</h1></header>
+
+        <form id="consentForm" class="card" autocomplete="off" novalidate>
+            <div class="row">
+                <div class="col">
+                    <label for="fullName">Full name</label>
+                    <input id="fullName" name="fullName" type="text" required placeholder="Jane Example">
+                </div>
+                <div class="col">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" placeholder="name@example.com">
+                </div>
+                <div class="col">
+                    <label for="phone">Phone</label>
+                    <input id="phone" name="phone" type="tel" placeholder="(555) 555-5555">
+                </div>
+                <div class="col">
+                    <label for="dob">Date of birth</label>
+                    <input id="dob" name="dob" type="date">
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+                <div class="full">
+                    <label for="address">Address</label>
+                    <input id="address" name="address" type="text" placeholder="Street, City, State, ZIP">
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+                <div class="full">
+                    <label for="notes">Notes / Why you are sharing info</label>
+                    <textarea id="notes" name="notes" placeholder="Optional details..."></textarea>
+                </div>
+            </div>
+
+            <div class="consent" role="group" aria-label="Consent text">
+                <strong>Consent:</strong>
+                <p style="margin:.4em 0 0">
+                    By checking the box below and signing, you give permission for the information on this form to be collected and stored by the form owner for the purposes described to you. You confirm you are signing voluntarily and understand how your information will be used.
+                </p>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;margin:8px 0">
+                <input id="consentCheckbox" name="consent" type="checkbox" required>
+                <label for="consentCheckbox" style="margin:0">I consent to collection and storage of my information.</label>
+            </div>
+
+            <div style="margin-top:12px" class="card">
+                <label>Signature (draw with finger/stylus)</label>
+                <div class="sig-area">
+                    <canvas id="sig-canvas"></canvas>
+                    <div class="controls">
+                        <button type="button" id="clearBtn" class="small ghost">Clear signature</button>
+                        <button type="button" id="undoBtn" class="small ghost">Undo last stroke</button>
+                        <div style="flex:1"></div>
+                        <button type="button" id="downloadSig" class="small ghost">Download signature PNG</button>
+                    </div>
+                    <div class="note">Signature required. If you can't sign, you may use an alternate acceptance method — make sure it's legally acceptable where you are.</div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center;margin-top:14px">
+                <button type="submit">Submit & Download</button>
+                <button type="button" id="resetForm" class="ghost">Reset form</button>
+            </div>
+
+            <p id="status" class="note" aria-live="polite"></p>
+        </form>
+    </div>
+
+    <script>
+        /* ---------- Signature pad (simple strokes storage) ---------- */
+        const canvas = document.getElementById('sig-canvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let strokes = []; // array of stroke arrays: [{x,y},...]
+        let currentStroke = null;
+        let pixelRatio = window.devicePixelRatio || 1;
+
+        function resizeCanvas() {
+            // preserve signature while resizing
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const cssW = canvas.clientWidth;
+            const cssH = canvas.clientHeight;
+            canvas.width = Math.floor(cssW * pixelRatio);
+            canvas.height = Math.floor(cssH * pixelRatio);
+            canvas.style.width = cssW + 'px';
+            canvas.style.height = cssH + 'px';
+            ctx.scale(pixelRatio, pixelRatio);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 2.6;
+            ctx.strokeStyle = '#111';
+            // if any strokes exist, redraw them after resize
+            redrawAll();
+        }
+
+        function getPointFromEvent(e) {
+            const rect = canvas.getBoundingClientRect();
+            if (e.touches && e.touches.length) {
+                const t = e.touches[0];
+                return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+            } else {
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            }
+        }
+
+        function startDrawing(e) {
+            e.preventDefault();
+            drawing = true;
+            currentStroke = [];
+            const p = getPointFromEvent(e);
+            currentStroke.push(p);
+            strokes.push(currentStroke);
+            redrawAll();
+        }
+
+        function continueDrawing(e) {
+            if (!drawing) return;
+            e.preventDefault();
+            const p = getPointFromEvent(e);
+            currentStroke.push(p);
+            drawStrokeSegment(currentStroke);
+        }
+
+        function stopDrawing(e) {
+            if (!drawing) return;
+            drawing = false;
+            currentStroke = null;
+        }
+
+        function drawStrokeSegment(stroke) {
+            if (!stroke || stroke.length < 2) return;
+            ctx.beginPath();
+            const last = stroke[stroke.length - 2];
+            const now = stroke[stroke.length - 1];
+            ctx.moveTo(last.x, last.y);
+            ctx.lineTo(now.x, now.y);
+            ctx.stroke();
+        }
+
+        function redrawAll() {
+            // clear
+            ctx.clearRect(0, 0, canvas.width / pixelRatio, canvas.height / pixelRatio);
+            // redraw each stroke smoothly
+            ctx.lineWidth = 2.6;
+            ctx.strokeStyle = '#111';
+            for (const stroke of strokes) {
+                if (!stroke.length) continue;
+                ctx.beginPath();
+                ctx.moveTo(stroke[0].x, stroke[0].y);
+                for (let i = 1; i < stroke.length; i++) {
+                    ctx.lineTo(stroke[i].x, stroke[i].y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        function clearSignature() {
+            strokes = [];
+            currentStroke = null;
+            redrawAll();
+        }
+
+        function undoStroke() {
+            strokes.pop();
+            redrawAll();
+        }
+
+        function isSignatureEmpty() {
+            return strokes.length === 0;
+        }
+
+        window.addEventListener('resize', debounce(resizeCanvas, 120));
+        resizeCanvas();
+
+        // pointer events + touch + mouse
+        canvas.addEventListener('pointerdown', startDrawing);
+        canvas.addEventListener('pointermove', continueDrawing);
+        canvas.addEventListener('pointerup', stopDrawing);
+        canvas.addEventListener('pointercancel', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', continueDrawing, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        /* ---------- form logic ---------- */
+        const form = document.getElementById('consentForm');
+        const status = document.getElementById('status');
+        document.getElementById('clearBtn').addEventListener('click', clearSignature);
+        document.getElementById('undoBtn').addEventListener('click', undoStroke);
+        document.getElementById('downloadSig').addEventListener('click', () => {
+            if (isSignatureEmpty()) { setStatus('No signature to download.', true); return; }
+            downloadSignaturePNG();
+        });
+
+        document.getElementById('resetForm').addEventListener('click', (e) => {
+            form.reset();
+            clearSignature();
+            setStatus('');
+        });
+
+        form.addEventListener('submit', function (evt) {
+            evt.preventDefault();
+            setStatus('');
+            // basic validation
+            const consent = document.getElementById('consentCheckbox').checked;
+            const fullName = document.getElementById('fullName').value.trim();
+            if (!fullName) {
+                setStatus('Please enter full name.', true); document.getElementById('fullName').focus(); return;
+            }
+            if (!consent) {
+                setStatus('You must consent before submitting.', true);
+                return;
+            }
+            if (isSignatureEmpty()) {
+                setStatus('Signature required. Please sign in the signature box.', true);
+                return;
+            }
+
+            // gather data
+            const data = {
+                collectedAt: new Date().toISOString(),
+                fullName: document.getElementById('fullName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                dob: document.getElementById('dob').value || null,
+                address: document.getElementById('address').value.trim(),
+                notes: document.getElementById('notes').value.trim(),
+                consentGiven: consent,
+                signaturePNG: getSignatureDataURL(), // data URL
+            };
+
+            // offer download of JSON
+            downloadJSON(data, `consent_${sanitizeFilename(data.fullName || 'anonymous')}_${shortDate()}.json`);
+            setStatus('Data prepared and downloaded. If you want to send it to a server, enable the fetch() code in the script.', false);
+
+            // Example: send to server - uncomment and change URL to your endpoint
+            /*
+            fetch('https://your-server.example.com/submit', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify(data)
+            })
+            .then(r => { if (r.ok) setStatus('Sent to server successfully.'); else setStatus('Server returned an error.', true); })
+            .catch(err => setStatus('Failed to send to server: ' + err.message, true));
+            */
+        });
+
+        /* ---------- helpers ---------- */
+        function getSignatureDataURL() {
+            // export full resolution PNG
+            // we need to convert canvas to png using its current pixel content
+            return canvas.toDataURL('image/png');
+        }
+
+        function downloadSignaturePNG(filename) {
+            const url = getSignatureDataURL();
+            triggerDownload(url, filename || `signature_${shortDate()}.png`);
+        }
+
+        function downloadJSON(obj, filename) {
+            const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            triggerDownload(url, filename || `data_${shortDate()}.json`);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+
+        function triggerDownload(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        function setStatus(msg, isError) {
+            status.textContent = msg;
+            status.style.color = isError ? '#b00020' : '#2a6f2a';
+        }
+
+        function sanitizeFilename(name) {
+            return name.replace(/[^\w\-]/g, '_').slice(0, 80);
+        }
+
+        function shortDate() {
+            const d = new Date();
+            return d.toISOString().replace(/[:.]/g, '-');
+        }
+
+        /* ---------- small debounce ---------- */
+        function debounce(fn, wait = 100) {
+            let t;
+            return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+        }
+
+        /* ---------- extra: detect when user tries to submit without signature and draw a hint ---------- */
+        function flashCanvasBorder() {
+            const old = canvas.style.borderColor;
+            canvas.style.borderColor = '#b00020';
+            setTimeout(() => canvas.style.borderColor = old, 800);
+        }
+        form.addEventListener('invalid', (e) => {
+            if (e.target === document.getElementById('consentCheckbox')) {
+                setStatus('Please check the consent box to continue.', true);
+            }
+        }, true);
+    </script>
+</body>
+</html>
