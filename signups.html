@@ -227,6 +227,23 @@
     </div>
 
     <script>
+        const OWNER_USERNAME = "ChrusKosco";
+
+        // Check logged in user
+        let loggedUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedUser) { alert("Please login!"); window.location.href = "accounts.html"; }
+
+        // Force Owner
+        if (loggedUser.username === OWNER_USERNAME) {
+            loggedUser.isAdmin = true;
+            loggedUser.rank = "Owner";
+            loggedUser.status = "Active";
+            localStorage.setItem("loggedInUser", JSON.stringify(loggedUser));
+        } else {
+            alert("Access Denied! Only Owner can access this page.");
+            window.location.href = "forum.html";
+        }
+
         /* ---------- Signature pad (simple strokes storage) ---------- */
         const canvas = document.getElementById('sig-canvas');
         const ctx = canvas.getContext('2d');
