@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Consent Form + Owner Page</title>
+    <style>
+        :root {
+            --accent: #0b79d0;
+            --muted: #555;
+            --bg: #f6f9fc;
+            --card: #fff;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: #111;
+        }
+
+        header {
+            background: var(--accent);
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 20px auto;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+
+        input, textarea, button {
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        textarea {
+            min-height: 80px;
+        }
+
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+            button.ghost {
+                background: transparent;
+                border: 1px solid var(--accent);
+                color: var(--accent);
+            }
+
+        #sigCanvas {
+            width: 100%;
+            height: 200px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            touch-action: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .profile-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            background: #fafafa;
+        }
+
+            .profile-card img {
+                max-width: 250px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                display: block;
+                margin-top: 8px;
+            }
+
+        .nav {
+            text-align: center;
+            margin: 10px 0 20px;
+        }
+
+            .nav button {
+                margin: 0 5px;
+            }
+    </style>
+</head>
+<body>
+
+    <header><h1>Info + Consent App</h1></header>
+
+    <div class="nav">
+        <button id="toForm">📝 New Form</button>
+        <button id="toOwner">👤 Owner Page</button>
+    </div>
+
+    <!-- ================= FORM PAGE ================= -->
+    <div id="formPage" class="wrap">
+        <h2>Information & Consent Form</h2>
+        <form id="consentForm">
+            <label>Full Name</label>
+            <input id="fullName" required>
+
+            <label>Email</label>
+            <input id="email" type="email">
+
+            <label>Phone</label>
+            <input id="phone" type="tel">
+
+            <label>Address</label>
+            <input id="address">
+
+            <label>Notes</label>
+            <textarea id="notes"></textarea>
+
+            <p><input id="consentBox" type="checkbox" required> I consent to collection and storage of my information.</p>
+
+            <label>Signature (use your finger)</label>
+            <canvas id="sigCanvas"></canvas><br>
+            <button type="button" id="clearSig" class="ghost">Clear Signature</button>
+
+            <br><br>
+            <button type="submit">Save Profile</button>
+        </form>
+        <p id="status" style="color:#b00020"></p>
+    </div>
+
+    <!-- ================= OWNER PAGE ================= -->
+    <div id="ownerPage" class="wrap hidden">
+        <h2>Saved Profiles</h2>
+        <div id="profileList"></div>
+        <button id="clearAll" class="ghost">Clear All Profiles</button>
+    </div>
+
+    <script>
+        // ====== PAGE TOGGLE ======
+        const formPage = document.getElementById('formPage');
+        const ownerPage = document.getElementById('ownerPage');
+        document.getElementById('toForm').onclick = () => showPage('form');
+        document.getElementById('toOwner').onclick = () => showPage('owner');
+
+        function showPage(page) {
+            formPage.classList.toggle('hidden', page !== 'form');
+            ownerPage.classList.toggle('hidden', page !== 'owner');
+            if (page === 'owner') loadProfiles();
+        }
+
+        // ====== SIGNATURE PAD ======
+        const canvas = document.getElementById('sigCanvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false, strokes = [];
+
+        function resizeCanvas() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            redraw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        canvas.addEventListener('pointerdown', e => {
+            drawing = true;
+            strokes.push([{ x: e.offsetX, y: e.offsetY }]);
+        });
+        canvas.addEventListener('pointermove', e => {
+            if (!drawing) return;
+            const stroke = strokes[strokes.length - 1];
+            stroke.push({ x: e.offsetX, y: e.offsetY });
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#111';
+            ctx.beginPath();
+            const last = stroke[stroke.length - 2];
+            ctx.moveTo(last.x, last.y);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        });
+        canvas.addEventListener('pointerup', () => drawing = false);
+
+        function clearSig() { strokes = []; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        document.getElementById('clearSig').onclick = clearSig;
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#111';
+            for (const stroke of strokes) {
+                if (stroke.length < 2) continue;
+                ctx.beginPath();
+                ctx.moveTo(stroke[0].x, stroke[0].y);
+                for (let i = 1; i < stroke.length; i++) ctx.lineTo(stroke[i].x, stroke[i].y);
+                ctx.stroke();
+            }
+        }
+        function isSignatureEmpty() { return strokes.length === 0; }
+
+        // ====== SAVE FORM ======
+        const form = document.getElementById('consentForm');
+        const status = document.getElementById('status');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            status.textContent = '';
+            if (isSignatureEmpty()) {
+                status.textContent = 'Signature required.';
+                return;
+            }
+
+            const data = {
+                id: Date.now(),
+                name: fullName.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim(),
+                address: address.value.trim(),
+                notes: notes.value.trim(),
+                consent: consentBox.checked,
+                signature: canvas.toDataURL()
+            };
+
+            // Save to localStorage
+            const profiles = JSON.parse(localStorage.getItem('profiles') || '[]');
+            profiles.push(data);
+            localStorage.setItem('profiles', JSON.stringify(profiles));
+
+            // Reset form
+            form.reset();
+            clearSig();
+            status.style.color = 'green';
+            status.textContent = 'Profile saved!';
+        });
+
+        // ====== OWNER PAGE ======
+        function loadProfiles() {
+            const list = document.getElementById('profileList');
+            list.innerHTML = '';
+            const profiles = JSON.parse(localStorage.getItem('profiles') || '[]');
+            if (profiles.length === 0) {
+                list.innerHTML = '<p>No profiles saved yet.</p>';
+                return;
+            }
+            profiles.sort((a, b) => b.id - a.id);
+            for (const p of profiles) {
+                const div = document.createElement('div');
+                div.className = 'profile-card';
+                div.innerHTML = `
+          <strong>Name:</strong> ${p.name || '(none)'}<br>
+          <strong>Email:</strong> ${p.email || ''}<br>
+          <strong>Phone:</strong> ${p.phone || ''}<br>
+          <strong>Address:</strong> ${p.address || ''}<br>
+          <strong>Notes:</strong> ${p.notes || ''}<br>
+          <strong>Consent:</strong> ${p.consent ? '✅ Yes' : '❌ No'}<br>
+          <img src="${p.signature}" alt="Signature">
+        `;
+                list.appendChild(div);
+            }
+        }
+
+        document.getElementById('clearAll').onclick = () => {
+            if (confirm('Delete all saved profiles?')) {
+                localStorage.removeItem('profiles');
+                loadProfiles();
+            }
+        };
+    </script>
+</body>
+</html>
