@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <style>
+        body {
+            font-family: Arial,sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        input, select {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: #004999;
+            }
+
+        .panel {
+            background: white;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            max-width: 500px;
+        }
+
+        h3 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .online {
+            color: green;
+        }
+
+        .offline {
+            color: gray;
+        }
+
+        .busy {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h2>Your Profile</h2>
+    <!--Pages-->
+    <nav>
+        <button class="buttons" onclick="document.location='index.html'">
+            Home
+        </button>
+
+        <button class="buttons" onclick="document.location='games.html'">
+            Games
+        </button>
+
+        <button class="buttons" onclick="document.location='servers.html'">
+            Servers
+        </button>
+
+        <button class="buttons" onclick="document.location='tv.html'">
+            TV
+        </button>
+
+        <button class="buttons" onclick="document.location='store.html'">
+            Store
+        </button>
+
+        <button class="buttons" onclick="document.location='forum.html'">
+            Forum
+        </button>
+
+        <button class="buttons" onclick="document.location='account.html'">
+            Account
+        </button>
+
+        <button class="buttons" onclick="document.location='aboutus.html'">
+            About Us
+        </button>
+    </nav>
+    <form id="profileForm">
+        <input type="text" id="displayName" placeholder="Display Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <!-- Profile Picture -->
+        <input type="file" id="profilePicture" accept="image/*">
+        <input type="text" id="phone" placeholder="Phone">
+        <input type="text" id="address" placeholder="Address">
+        <input type="text" id="city" placeholder="City">
+        <input type="date" id="birthdate" placeholder="Birthdate">
+        <select id="gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+        <button type="submit">Update Profile</button>
+    </form>
+    <button onclick="logout()">Logout</button>
+
+    <!-- Profile Display -->
+    <div id="profileDisplay" class="panel">
+        <h3>Profile Info</h3>
+        <img id="profilePicDisplay" src="" alt="Profile Picture" width="120" style="display:block; margin-top:10px;">
+        <p><strong>Display Name:</strong> <span id="showDisplayName"></span></p>
+        <p><strong>Email:</strong> <span id="showEmail"></span></p>
+        <p><strong>Phone:</strong> <span id="showPhone"></span></p>
+        <p><strong>Address:</strong> <span id="showAddress"></span></p>
+        <p><strong>City:</strong> <span id="showCity"></span></p>
+        <p><strong>Birthdate:</strong> <span id="showBirthdate"></span></p>
+        <p><strong>Gender:</strong> <span id="showGender"></span></p>
+        <p><strong>Friends:</strong> <span id="friendsList"></span></p>
+        <p><strong>Clan:</strong> <span id="clansList"></span></p>
+    </div>
+
+    <!-- Friends List -->
+    <div class="panel">
+        <h3>Friends</h3>
+        <ul id="friendsList"></ul>
+        <input type="text" id="newFriend" placeholder="Friend Username">
+        <select id="friendStatus">
+            <option value="online">Online</option>
+            <option value="busy">Busy</option>
+            <option value="offline">Offline</option>
+        </select>
+        <button onclick="addFriend()">Add Friend</button>
+    </div>
+
+    <script>
+        let loggedUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedUser) { alert("Login required"); window.location.href = "accounts.html"; }
+
+        // Load existing picture
+        document.addEventListener("DOMContentLoaded", () => {
+            if (loggedUser.profile && loggedUser.profile.picture) {
+                document.getElementById("profilePicDisplay").src = loggedUser.profile.picture;
+            }
+        });
+
+        // When user selects a file
+        document.getElementById("profilePicture").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const imageBase64 = event.target.result;
+                // Display image
+                document.getElementById("profilePicDisplay").src = imageBase64;
+                // Save to loggedUser profile
+                loggedUser.profile = loggedUser.profile || {};
+                loggedUser.profile.picture = imageBase64;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // Defaults
+        loggedUser.friends = loggedUser.friends || [];
+        loggedUser.clans = loggedUser.clans || [];
+
+        // Render Profile
+        function renderProfile() {
+            document.getElementById("showDisplayName").textContent = loggedUser.profile.displayName || "";
+            document.getElementById("showEmail").textContent = loggedUser.profile.email || "";
+            document.getElementById("showPhone").textContent = loggedUser.profile.phone || "";
+            document.getElementById("showAddress").textContent = loggedUser.profile.address || "";
+            document.getElementById("showCity").textContent = loggedUser.profile.city || "";
+            document.getElementById("showBirthdate").textContent = loggedUser.profile.birthdate || "";
+            document.getElementById("showGender").textContent = loggedUser.profile.gender || "";
+        }
+
+        // Render Friends
+        function renderFriends() {
+            const list = document.getElementById("friendsList");
+            list.innerHTML = "";
+            loggedUser.friends.forEach(f => {
+                let li = document.createElement("li");
+                li.innerHTML = `
+                        <span><strong>${f.name}</strong></span>
+                        <span class="status ${f.status}">${f.status}</span>
+                    `;
+                list.appendChild(li);
+            });
+        }
+
+        // Add Friend
+        function addFriend() {
+            const name = document.getElementById("newFriend").value;
+            const status = document.getElementById("friendStatus").value;
+            if (!name) return;
+            loggedUser.friends.push({ name, status });
+            saveUser();
+            renderFriends();
+            document.getElementById("newFriend").value = "";
+        }
+
+        // Save User
+        function saveUser() {
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            const idx = users.findIndex(u => u.username === loggedUser.username);
+            if (idx > -1) {
+                users[idx] = loggedUser;
+                localStorage.setItem("users", JSON.stringify(users));
+                localStorage.setItem("loggedInUser", JSON.stringify(loggedUser));
+            }
+        }
+
+        // Profile Form Update
+        document.getElementById("profileForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const displayName = document.getElementById("displayName").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+            const address = document.getElementById("address").value;
+            const city = document.getElementById("city").value;
+            const birthdate = document.getElementById("birthdate").value;
+            const gender = document.getElementById("gender").value;
+
+            let users = JSON.parse(localStorage.getItem("users"));
+            const idx = users.findIndex(u => u.username === loggedUser.username);
+            if (idx > -1) {
+                users[idx].profile = { displayName, email, phone, address, city, birthdate, gender };
+                loggedUser = users[idx];
+                localStorage.setItem("users", JSON.stringify(users));
+                localStorage.setItem("loggedInUser", JSON.stringify(loggedUser));
+                alert("Profile updated!");
+            }
+            renderProfile();
+        });
+
+        function logout() {
+            localStorage.removeItem("loggedInUser");
+            window.location.href = "index.html";
+        }
+
+        // Initial render
+        renderProfile();
+        renderFriends();
+    </script>
+
+</body>
+</html>
