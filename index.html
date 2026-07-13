@@ -107,7 +107,7 @@
     <p>
         <img src="Images/LitercyCouncil.jpg" alt="LitercyCouncil" width="750" height="500"><br>
         LitercyCouncil - GED, Apprenticships
-<p />
+    <p />
     <p>
         Other Services -
         <table>
@@ -137,7 +137,7 @@
         </table>
         <br>
         Free Apprenticship Programs, get paid and learn a trait.<br>
-        https://www.alaskaworks.org/<br>
+        <a href="https://www.alaskaworks.org"> https://www.alaskaworks.org</a><br>
         <br>
         <a href="https://www.facebook.com/groups/1714028126225931" class="fa fa-facebook" target="_blank"></a><br>
         <a href="https://www.facebook.com/groups/1714028126225931">Facebook WorldHelp Page</a>
@@ -152,17 +152,108 @@
         <br>elderly support
         <br>vetran support
     </p>
-    <!-- PayPal Donate Button -->
-    <form action="https://www.paypal.com/donate" method="post" target="_blank">
-        <!-- Replace with your PayPal business email -->
-        <input type="hidden" name="business" value="chruskosco@gmail.com">
-        <input type="hidden" name="no_recurring" value="0">
-        <input type="hidden" name="currency_code" value="USD">
-        <input type="hidden" name="item_name" value="Support WorldHelp">
-        <button type="submit" style="background:#efc552; color:gray; padding:12px 24px; border:none; border-radius:8px; font-size:16px; cursor:pointer;">
-            ❤️ Donate to WorldHelp
-        </button>
-    </form>
+
+    <div id="donate-button-container">
+        <div id="donate-button"></div>
+        <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+        <script>
+            PayPal.Donation.Button({
+                env: 'production',
+                hosted_button_id: '34RVTJY74TLQC',
+                image: {
+                    src: 'https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif',
+                    alt: 'Donate with PayPal button',
+                    title: 'PayPal - The safer, easier way to pay online!',
+                }
+            }).render('#donate-button');
+        </script>
+    </div>
+    <h2>Leaderboard Not Working Right Now!.</h2>
+    <div>
+        <h2>Total Raised: $<span id="totalRaised">0.00</span></h2>
+
+        <h2>❤️ Recent Donations</h2>
+        <div id="recentDonations"></div>
+
+        <h2>🏆 Leaderboard</h2>
+        <table border="1" cellpadding="10">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Donor</th>
+                    <th>Total Donated</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const donations = [
+            {
+                name: "Nobody",
+                amount: 0,
+                date: "2026-07-13"
+            },
+            {
+                name: "Nobody",
+                amount: 0,
+                date: "2026-07-13"
+            },
+            {
+                name: "Nobody",
+                amount: 0,
+                date: "2026-07-13"
+            },
+            {
+                name: "Nobody",
+                amount: 0,
+                date: "2026-07-13"
+            }
+        ];
+
+        // Recent Donations
+        const recent = [...donations]
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const recentDiv = document.getElementById("recentDonations");
+
+        recent.forEach(d => {
+            recentDiv.innerHTML += `
+            <p>❤️ <b>${d.name}</b> donated <b>$${d.amount}</b> (${d.date})</p>
+        `;
+        });
+
+        // Leaderboard
+        const totals = {};
+
+        donations.forEach(d => {
+            totals[d.name] = (totals[d.name] || 0) + d.amount;
+        });
+
+        const leaderboard = Object.entries(totals)
+            .map(([name, total]) => ({ name, total }))
+            .sort((a, b) => b.total - a.total);
+
+        const table = document.getElementById("leaderboard");
+
+        leaderboard.forEach((d, index) => {
+            table.innerHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${d.name}</td>
+                <td>$${d.total}</td>
+            </tr>
+        `;
+        });
+
+        const totalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
+
+        document.getElementById("totalRaised").textContent =
+            totalRaised.toFixed(2);
+    </script>
+
+
     <script>
         // Sign up with email
         function signUp(email, password) {
